@@ -1,0 +1,89 @@
+{
+    "Pagamento para Fornecedor": {
+        "description": "Pagamentos realizados para fornecedores externos relacionados a produtos, materiais, serviços e boletos em geral.",
+        "examples": [
+            "Pagamento de Boleto",
+            "PAG BOLETO",
+            "Pix - Enviado",
+            "DISTRIBUIDORA ALIMENTOS M LTDA",
+            "INDUSTRIA DE PRODUTOS ALIMENTICIOS",
+            "IND REUNIDAS RAYMUNDO FONTE",
+            "URBANO AGROINDUSTRIAL LTDA",
+            "CEREALISTA VITORIA",
+            "INDUSTRIA DE LATICINIOS",
+            "GOLD STYLE",
+            "METHODUS CONTABILIDADE",
+            "BANCO ITAU S/A"
+        ]
+    },
+    "Pagamento de Contas Internas": {
+        "description": "Pagamentos relacionados às despesas operacionais internas, incluindo energia elétrica, água, telefone e tarifas bancárias.",
+        "examples": [
+            "Pagamento conta luz",
+            "Pagto Energia Elétrica",
+            "Pagto conta telefone",
+            "Pgto conta água",
+            "Tarifa Pacote de Serviços",
+            "Tarifa MSG - Mês Anterior",
+            "Tarifa Renovação Cadastro",
+            "Tar Depós Proces-Caixa",
+            "Tarifas Pendentes",
+            "PACOT SERV",
+            "NEOENERGIA PERNAMBUCO",
+            "COMPESA",
+            "CLARO S.A.",
+            "BANCO XP S/A"
+        ]
+    },
+    "Impostos": {
+        "description": "Pagamentos de ICMS, PIS, COFINS, ISS, IPTU, taxas municipais e Impostos",
+        "examples": [
+            "Pagto ICMS",
+            "Pagto ISS",
+            "Pagto IPTU",
+            "Pagto Taxas",
+            "Pagto Impostos",
+            "Impostos",
+            "ICMS DIVERSOS E-FISCO",
+            "RFB-DARF CODIGO DE BARRAS",
+            "SEFAZ PE 193 E-FISCO",
+            "DETRAN PB ARRECADACAO",
+            "FGTS ARRECADACAO GRF",
+            "SER IPVA"
+        ]
+    },
+    "Investimentos e Aplicacoes Financeiras": {
+        "description": "Movimentações financeiras relacionadas a investimentos, aplicações financeiras e transferências para contas de investimento.",
+        "examples": [
+            "Transferido para Poupança",
+            "BB Rende Fácil",
+            "Aplicação",
+            "Investimento em LCA, CDB e LCI",
+            "CAPITAL ANNEX FUNDO DE INVESTIMENTO",
+            "FIDC NEGOCIAL NP"            
+        ]
+    },
+    "Estornos": {
+        "description": "Estornos de cartão de crédito, pagamentos, devoluções de PIX, cancelamentos de operações e reembolsos",
+        "examples": [
+            "Estorno de Recebimento",
+            "Devolução",
+            "Reembolso",
+            "Cancelamento",
+            "Devolução de Valores",
+            "Devoluç Cheque Depositado",
+            "Pix-Recebimento devolvido",
+            "Rebloqueio de deposito"
+        ]
+    },
+    "Outros": {
+        "description": "Qualquer transação que não se encaixe nas categorias acima, transações não identificadas, atípicas ou que precisam de análise manual",
+        "examples": [
+            "Transferência não identificada",
+            "Pagamento não categorizado",
+            "Transação Atípica",
+            "Saldo Aprovisionado Dia",
+            "Saldo Atual"
+        ]
+    }
+}
