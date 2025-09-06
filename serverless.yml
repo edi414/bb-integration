@@ -1,0 +1,93 @@
+service: bb-integration
+
+provider:
+  name: aws
+  region: us-east-1
+  timeout: 900  # 15 minutos
+  memorySize: 2048  # Aumentado para container
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - ssm:GetParameter
+            - ssm:GetParameters
+            - ssm:GetParametersByPath
+          Resource:
+            - arn:aws:ssm:us-east-1:244641534401:parameter/bb-integration/*
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+            - s3:ListBucket
+            - s3:PutObject
+            - s3:DeleteObject
+          Resource:
+            - arn:aws:s3:::credentials-personalized-integrations
+            - arn:aws:s3:::credentials-personalized-integrations/*
+        - Effect: Allow
+          Action:
+            - ecr:GetAuthorizationToken
+            - ecr:BatchCheckLayerAvailability
+            - ecr:GetDownloadUrlForLayer
+            - ecr:BatchGetImage
+          Resource: "*"
+
+functions:
+  processExtrato:
+    image:
+      uri: 244641534401.dkr.ecr.${aws:region}.amazonaws.com/bb-integration:latest
+    description: "Processa extratos bancários BB diariamente"
+    events:
+      # EventBridge Rule para executar diariamente às 10h BR (13h UTC)
+      - schedule:
+          rate: cron(0 13 * * ? *)
+          description: "Executa processamento diário às 10h BR"
+          enabled: true
+    environment:
+      # Configurações do banco de dados
+      DB_HOST: ${ssm:/bb-integration/db/host}
+      DB_PORT: ${ssm:/bb-integration/db/port}
+      DB_NAME: ${ssm:/bb-integration/db/name}
+      DB_USER: ${ssm:/bb-integration/db/user}
+      DB_PASSWORD: ${ssm:/bb-integration/db/password}
+      
+      # Configurações da API do Banco do Brasil
+      CLIENT_SECRET: ${ssm:/bb-integration/bb/client-secret}
+      CLIENT_ID: ${ssm:/bb-integration/bb/client-id}
+      DEVELOPER_APPLICATION_KEY: ${ssm:/bb-integration/bb/developer-key}
+      BASIC_AUTH: ${ssm:/bb-integration/bb/basic-auth}
+      
+      # Configurações AWS S3
+      S3_BUCKET: ${ssm:/bb-integration/s3/bucket}
+      S3_CERTIFICATE_KEY: bb-integration/EDIVALDO BEZERRA ALVES.p12
+      
+      # Configurações do Certificado
+      PFX_PASSWORD: ${ssm:/bb-integration/certificate/pfx-password}
+      
+      # Configurações da API
+      TOKEN_URL: ${ssm:/bb-integration/api/token-url}
+      SCOPE: ${ssm:/bb-integration/api/scope}
+      EXTRATO_URL: ${ssm:/bb-integration/api/extrato-url}
+      
+      # Configurações do Processo
+      PROCESS_NAME: ${ssm:/bb-integration/process/name}
+      
+      # OpenAI
+      OPENAI_API_KEY: ${ssm:/bb-integration/openai/api-key}
+
+package:
+  patterns:
+    - '!node_modules/**'
+    - '!.git/**'
+    - '!*.md'
+    - '!*.sh'
+    - '!test_*.py'
+    - '!__pycache__/**'
+    - '!.pytest_cache/**'
+    - '!logs/**'
+    - '!certifications/**'
+    - '!.env'
+    - '!.DS_Store'
+    - '!Dockerfile'
+    - '!docker-compose.yml'
+    - '!.dockerignore'
