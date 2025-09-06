@@ -93,7 +93,7 @@ OPENAI_API_KEY=sua_chave_openai
 
 ## 🚀 Uso
 
-### Execução Manual
+### Execução Local
 
 ```bash
 python main.py
@@ -107,37 +107,44 @@ O script principal:
 5. Insere no banco de dados
 6. Registra o status do processamento
 
-### Configuração de Cronjob (Automático)
+### Deploy AWS Lambda (Produção)
 
-Para configurar execução automática diária às 10h da manhã:
+O sistema está configurado para deploy automático na AWS Lambda usando ECR e Serverless Framework:
 
+#### 1. Configurar Parâmetros AWS
 ```bash
-# Configurar cronjob
-./setup_cronjob.sh
-
-# Verificar se foi configurado
-crontab -l
-
-# Remover cronjob (se necessário)
-./remove_cronjob.sh
+# Configurar parâmetros no AWS Parameter Store
+./setup_parameters.sh
 ```
 
-**Detalhes do Cronjob:**
-- **Execução:** Diariamente às 10:00 BR time (13:00 UTC)
-- **Log:** `logs/cron.log`
-- **Comando:** `0 13 * * * cd /caminho/do/projeto && python3 main.py >> logs/cron.log 2>&1`
-
-**Comandos úteis:**
+#### 2. Deploy Completo
 ```bash
-# Ver logs do cronjob em tempo real
-tail -f logs/cron.log
-
-# Testar execução manual
-python3 main.py
-
-# Verificar status do cronjob
-crontab -l
+# Deploy da aplicação para AWS Lambda
+./deploy-container.sh
 ```
+
+**Detalhes do Deploy:**
+- **Plataforma:** AWS Lambda com Container (ECR)
+- **Execução:** Diariamente às 10:00 BR time (13:00 UTC) via EventBridge
+- **Timeout:** 15 minutos
+- **Memory:** 2048 MB
+- **Repositório ECR:** `244641534401.dkr.ecr.us-east-1.amazonaws.com/bb-integration:latest`
+
+#### 3. Comandos de Gerenciamento
+```bash
+# Testar função Lambda
+serverless invoke -f processExtrato
+
+# Ver logs da Lambda
+serverless logs -f processExtrato
+
+# Remover stack completo
+serverless remove
+
+# Verificar status do deploy
+serverless info
+```
+
 
 ### Teste de Classificadores
 
@@ -147,13 +154,72 @@ python test_classifiers.py
 
 Testa e atualiza a classificação de transações no banco de dados.
 
+## 🏗️ Arquitetura do Sistema
+
+```mermaid
+graph TB
+    subgraph "AWS Cloud"
+        EB[EventBridge<br/>Schedule: 10h BR]
+        LB[AWS Lambda<br/>Container Runtime]
+        ECR[ECR Repository<br/>bb-integration:latest]
+        SSM[Parameter Store<br/>Configurações]
+        S3[S3 Bucket<br/>Certificados .p12]
+        CW[CloudWatch<br/>Logs & Monitoring]
+    end
+    
+    subgraph "External APIs"
+        BB[Banco do Brasil API<br/>Extratos Bancários]
+        OAI[OpenAI API<br/>Classificação IA]
+    end
+    
+    subgraph "Database"
+        PG[PostgreSQL<br/>Dados Processados]
+    end
+    
+    subgraph "Application Flow"
+        AUTH[Autenticação<br/>OAuth Token]
+        EXTRACT[Extração<br/>Dados Extrato]
+        ETL[Processamento ETL<br/>Limpeza & Transformação]
+        CLASSIFY[Classificação IA<br/>Categorização]
+        STORE[Armazenamento<br/>Banco de Dados]
+    end
+    
+    EB -->|Trigger Diário| LB
+    LB -->|Pull Image| ECR
+    LB -->|Get Config| SSM
+    LB -->|Download Cert| S3
+    LB -->|Logs| CW
+    
+    LB --> AUTH
+    AUTH --> BB
+    BB --> EXTRACT
+    EXTRACT --> ETL
+    ETL --> CLASSIFY
+    CLASSIFY --> OAI
+    CLASSIFY --> STORE
+    STORE --> PG
+    
+    style EB fill:#ff9999
+    style LB fill:#99ccff
+    style ECR fill:#99ff99
+    style SSM fill:#ffcc99
+    style S3 fill:#ffcc99
+    style CW fill:#ffcc99
+    style BB fill:#cc99ff
+    style OAI fill:#cc99ff
+    style PG fill:#99ffcc
+```
+
 ## 📁 Estrutura do Projeto
 
 ```
 bb-integration/
 ├── main.py                      # Script principal
-├── setup_cronjob.sh            # Script para configurar cronjob
-├── remove_cronjob.sh           # Script para remover cronjob
+├── lambda_function.py           # Entry point da AWS Lambda
+├── Dockerfile                   # Imagem Docker para Lambda
+├── serverless.yml              # Configuração Serverless Framework
+├── deploy-container.sh         # Script de deploy (excluído do git)
+├── setup_parameters.sh         # Configuração de parâmetros AWS (excluído do git)
 ├── test_classifiers.py         # Teste de classificadores
 ├── handlers/
 │   ├── auth.py                 # Autenticação com BB
@@ -207,10 +273,12 @@ O sistema utiliza PostgreSQL com as seguintes tabelas principais:
 
 ## 🔒 Segurança
 
-- Credenciais armazenadas em variáveis de ambiente
+- Credenciais armazenadas no AWS Parameter Store (produção) ou variáveis de ambiente (desenvolvimento)
 - Certificados digitais para autenticação
 - Logs sem informações sensíveis
-- Arquivo `.env` no `.gitignore`
+- Arquivos de configuração com credenciais excluídos do git (`.gitignore`)
+- IAM roles para acesso seguro aos recursos AWS
+- Container isolado na AWS Lambda
 
 ## 🐛 Troubleshooting
 
