@@ -210,3 +210,10 @@ __marimo__/
 logs/
 certifications/
 embedding_classifier_test.csv
+.serverless/
+node_modules/
+package-lock.json
+.DS_Store
+package.json
+deploy-container.sh
+setup_parameters.sh
