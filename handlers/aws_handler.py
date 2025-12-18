@@ -11,30 +11,19 @@ logger = setup_logger(
 )
 
 class S3Handler:
-    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None, region_name='us-east-1'):
+    def __init__(self, region_name='us-east-1'):
         """
-        Inicializa o handler do S3.
+        Inicializa o handler do S3 usando IAM role (Lambda).
         
         Args:
-            aws_access_key_id: Chave de acesso AWS (opcional, pode vir de variáveis de ambiente)
-            aws_secret_access_key: Chave secreta AWS (opcional, pode vir de variáveis de ambiente)
             region_name: Região AWS (padrão: us-east-1)
         """
         self.region_name = region_name
         
-        # Usar credenciais fornecidas ou variáveis de ambiente
-        if aws_access_key_id and aws_secret_access_key:
-            self.s3_client = boto3.client(
-                's3',
-                aws_access_key_id=aws_access_key_id,
-                aws_secret_access_key=aws_secret_access_key,
-                region_name=region_name
-            )
-        else:
-            # Tentar usar credenciais de variáveis de ambiente ou IAM role
-            self.s3_client = boto3.client('s3', region_name=region_name)
+        # Sempre usar IAM role - boto3 detecta automaticamente na Lambda
+        self.s3_client = boto3.client('s3', region_name=region_name)
         
-        logger.info(f"Handler S3 inicializado para região: {region_name}")
+        logger.info(f"Handler S3 inicializado para região: {region_name} (usando IAM role)")
     
     def download_certificate(self, bucket_name, s3_key, temp_dir=None):
         """

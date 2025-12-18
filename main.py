@@ -22,20 +22,22 @@ logger = setup_logger(
 # Configurações gerais
 token_url = os.getenv('TOKEN_URL')
 scope = os.getenv('SCOPE')
-pfx_password = os.getenv('PFX_PASSWORD').encode('utf-8')
+# Tratar senha do certificado: remover espaços, quebras de linha e caracteres de controle
+pfx_password_str = os.getenv('PFX_PASSWORD', '').strip().replace('\n', '').replace('\r', '')
+if not pfx_password_str:
+    logger.warning("PFX_PASSWORD não encontrada ou vazia")
+pfx_password = pfx_password_str.encode('utf-8')
 extrato_url = os.getenv('EXTRATO_URL')
 process_name = os.getenv('PROCESS_NAME')
 basic = os.getenv('BASIC_AUTH')
 
 # Configurações AWS
-aws_access_key = os.getenv('AWS_ACCESS_KEY_ID')
-aws_secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
 aws_region = os.getenv('AWS_REGION', 'us-east-1')
 s3_bucket = os.getenv('S3_BUCKET')
 s3_certificate_key = os.getenv('S3_CERTIFICATE_KEY')
 
-# Inicializar handler AWS
-s3_handler = S3Handler(aws_access_key, aws_secret_key, aws_region)
+# Inicializar handler AWS - sempre usa IAM role na Lambda
+s3_handler = S3Handler(region_name=aws_region)
 
 def obter_datas_pendentes():
     # Data de ontem
@@ -63,11 +65,11 @@ def obter_datas_pendentes():
     logger.info(f"Datas pendentes após filtro de datas futuras: {sorted(datas_pendentes)}")
     return sorted(datas_pendentes)
 
-datas_pendentes = obter_datas_pendentes()
-logger.info(f"Quantidade de datas pendentes: {len(datas_pendentes)}")
-logger.info(f"Datas pendentes para processamento: {datas_pendentes}")
-
-for data in datas_pendentes:
+def processar_data(data):
+    """
+    Processa uma data específica: baixa certificado, executa ETL e insere no banco.
+    Pode ser chamada pela Lambda ou pelo script local.
+    """
     # Variável para armazenar o caminho do certificado baixado
     local_cert_path = None
     
@@ -115,6 +117,7 @@ for data in datas_pendentes:
         logger.error(f"Erro ao processar a data {data}: {str(e)}", exc_info=True)
         logger.error(f"Detalhes do erro: {type(e).__name__}")
         print(f"Erro ao processar a data {data}. Verifique os logs.")
+        raise
     
     finally:
         # Limpar certificado baixado localmente
@@ -124,3 +127,12 @@ for data in datas_pendentes:
                 logger.info("Certificado temporário removido com sucesso")
             except Exception as cleanup_error:
                 logger.warning(f"Erro ao remover certificado temporário: {cleanup_error}")
+
+# Execução local (quando rodado como script)
+if __name__ == "__main__":
+    datas_pendentes = obter_datas_pendentes()
+    logger.info(f"Quantidade de datas pendentes: {len(datas_pendentes)}")
+    logger.info(f"Datas pendentes para processamento: {datas_pendentes}")
+
+    for data in datas_pendentes:
+        processar_data(data)

@@ -17,12 +17,16 @@ provider:
             - arn:aws:ssm:us-east-1:244641534401:parameter/bb-integration/*
         - Effect: Allow
           Action:
-            - s3:GetObject
             - s3:ListBucket
+          Resource:
+            - arn:aws:s3:::credentials-personalized-integrations
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+            - s3:HeadObject
             - s3:PutObject
             - s3:DeleteObject
           Resource:
-            - arn:aws:s3:::credentials-personalized-integrations
             - arn:aws:s3:::credentials-personalized-integrations/*
         - Effect: Allow
           Action:

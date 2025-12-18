@@ -20,7 +20,9 @@ classifier = EmbeddingClassifier(k_neighbors=3)
 
 def get_extrato_data(extrato_url, headers, date_inicio, date_fim, pfx_password, pfx_path):
     logger.info(f"Iniciando extração de dados para o período {date_inicio} - {date_fim}")
-    load_certificates(pfx_password=pfx_password, pfx_path=pfx_path)
+    # Carregar certificado e obter caminhos dos arquivos PEM
+    private_key_path, cert_path = load_certificates(pfx_path=pfx_path, pfx_password=pfx_password)
+    logger.debug(f"Usando certificado: {cert_path}, chave: {private_key_path}")
 
     numero_pagina = 1
     lista_lancamentos = []
@@ -39,7 +41,7 @@ def get_extrato_data(extrato_url, headers, date_inicio, date_fim, pfx_password, 
                 extrato_url,
                 headers=headers,
                 params=params,
-                cert=("cert.pem", "private_key.pem")
+                cert=(cert_path, private_key_path)
             )
             
             if response.status_code == 200:
