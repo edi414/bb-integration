@@ -1,7 +1,24 @@
 import json
 import os
+import sentry_sdk
+from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
+import logging
 from datetime import datetime
 from utils.logger import setup_logger
+
+# Configurar Sentry
+SENTRY_DSN = os.getenv("SENTRY_DSN")
+if SENTRY_DSN:
+    sentry_logging = LoggingIntegration(
+        level=logging.INFO,        # Captura INFO e acima como breadcrumbs
+        event_level=logging.ERROR  # Envia ERROR e acima como eventos (issues)
+    )
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        send_default_pii=True,
+        integrations=[AwsLambdaIntegration(), sentry_logging],
+    )
 
 from main import obter_datas_pendentes, processar_data
 

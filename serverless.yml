@@ -63,7 +63,7 @@ functions:
       
       # Configurações AWS S3
       S3_BUCKET: ${ssm:/bb-integration/s3/bucket}
-      S3_CERTIFICATE_KEY: bb-integration/EDIVALDO BEZERRA ALVES.p12
+      S3_CERTIFICATE_KEY: ${ssm:/bb-integration/s3/certificate-key}
       
       # Configurações do Certificado
       PFX_PASSWORD: ${ssm:/bb-integration/certificate/pfx-password}
@@ -78,6 +78,9 @@ functions:
       
       # OpenAI
       OPENAI_API_KEY: ${ssm:/bb-integration/openai/api-key}
+
+      # Sentry
+      SENTRY_DSN: ${ssm:/bb-integration/sentry/dsn}
 
 package:
   patterns:
