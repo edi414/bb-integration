@@ -117,7 +117,13 @@ O sistema está configurado para deploy automático na AWS Lambda usando ECR e S
 ./setup_parameters.sh
 ```
 
-#### 2. Deploy Completo
+#### 2. Pré-requisitos para o Deploy
+Antes de rodar o deploy, certifique-se de que:
+- O **Docker** está rodando localmente (ex: abra o Docker Desktop).
+- Sua **AWS CLI** tem sessão/credenciais válidas (`aws configure` ou variáveis de ambiente) e permissões para o ECR/Serverless.
+
+#### 3. Deploy Completo
+O script construirá a imagem Docker, fará o push direto para o AWS ECR e usará o Serverless Framework para provisionar e atualizar a Lambda. Para iniciar:
 ```bash
 # Deploy da aplicação para AWS Lambda
 ./deploy-container.sh
@@ -130,7 +136,7 @@ O sistema está configurado para deploy automático na AWS Lambda usando ECR e S
 - **Memory:** 2048 MB
 - **Repositório ECR:** `244641534401.dkr.ecr.us-east-1.amazonaws.com/bb-integration:latest`
 
-#### 3. Comandos de Gerenciamento
+#### 4. Comandos de Gerenciamento
 ```bash
 # Testar função Lambda
 serverless invoke -f processExtrato

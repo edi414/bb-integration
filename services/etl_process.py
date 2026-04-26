@@ -67,8 +67,8 @@ def get_extrato_data(extrato_url, headers, date_inicio, date_fim, pfx_password, 
 
 def processar_lancamento(lancamento):
     try:
-        # Verificar se o indicadorTipoLancamento é 'S' ou 'R'
-        if lancamento['indicadorTipoLancamento'] in ['S', 'R', 'D']:
+        # Verificar se o indicadorTipoLancamento é 'S', 'R', 'D' ou 'A'
+        if lancamento['indicadorTipoLancamento'] in ['S', 'R', 'D', 'A']:
             logger.debug(f"Registro filtrado - indicadorTipoLancamento = {lancamento['indicadorTipoLancamento']}")
             return None
 
@@ -145,9 +145,9 @@ def executar_etl(extrato_url, headers, pfx_path, pfx_password, date_inicio, date
     logger.info(f"Processando {len(lista_lancamento)} lançamentos")
     
     dados_processados = [processar_lancamento(lancamento) for lancamento in lista_lancamento]
-    # Filtrar registros None (onde indicadorTipoLancamento = 'S' ou 'R' ou 'D')
+    # Filtrar registros None (onde indicadorTipoLancamento = 'S', 'R', 'D' ou 'A')
     dados_processados = [d for d in dados_processados if d is not None]
-    logger.info(f"Após filtrar registros com indicadorTipoLancamento S/R/D: {len(dados_processados)} registros")
+    logger.info(f"Após filtrar registros com indicadorTipoLancamento S/R/D/A: {len(dados_processados)} registros")
     
     df = pd.DataFrame(dados_processados)
     
